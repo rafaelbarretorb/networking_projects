@@ -10,18 +10,16 @@
 
 namespace net {
 
-using boost::asio::ip::tcp;
 using boost::asio::ip::address_v4;
+using boost::asio::ip::tcp;
 using boost::system::error_code;
 
 class Acceptor {
  public:
-  Acceptor(boost::asio::io_service &ios,
-           uint16_t port_num) :
-           m_ios(ios),
-           m_acceptor(m_ios,
-                      tcp::endpoint(address_v4::any(), port_num)),
-           m_isStopped(false) {}
+  Acceptor(boost::asio::io_service &ios, uint16_t port_num)
+      : m_ios(ios),
+        m_acceptor(m_ios, tcp::endpoint(address_v4::any(), port_num)),
+        m_isStopped(false) {}
 
   // Start accepting incoming connection requests.
   void Start();
@@ -31,7 +29,7 @@ class Acceptor {
 
  private:
   void InitAccept();
-  void onAccept(const error_code&ec, std::shared_ptr<tcp::socket> sock);
+  void onAccept(const error_code &ec, std::shared_ptr<tcp::socket> sock);
 
   boost::asio::io_service &m_ios;
   tcp::acceptor m_acceptor;

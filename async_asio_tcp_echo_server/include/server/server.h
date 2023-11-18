@@ -6,12 +6,12 @@
 #include <memory>
 #include <thread>
 
-#include "Acceptor.h"
+#include "server/acceptor.h"
 
 namespace net {
 
-using boost::asio::ip::tcp;
 using boost::asio::ip::address_v4;
+using boost::asio::ip::tcp;
 
 class Server {
  public:
@@ -32,4 +32,4 @@ class Server {
 
 }  // namespace net
 
-#endif // ASIO_ASYNC_TCP_ECHO_SERVER_SERVER_H
+#endif  // ASIO_ASYNC_TCP_ECHO_SERVER_SERVER_H

@@ -1,10 +1,8 @@
 
-#include "Server.h"
+#include "server/server.h"
 
 namespace net {
-Server::Server() {
-  m_work.reset(new boost::asio::io_service::work(m_ios));
-}
+Server::Server() { m_work.reset(new boost::asio::io_service::work(m_ios)); }
 
 void Server::Start(uint16_t port_num, unsigned int thread_pool_size) {
   assert(thread_pool_size > 0);
@@ -16,9 +14,7 @@ void Server::Start(uint16_t port_num, unsigned int thread_pool_size) {
   // Create specified number of threads and
   // add them to the pool.
   for (unsigned int i = 0; i < thread_pool_size; i++) {
-    std::unique_ptr<std::thread> th(new std::thread([this]() {
-        m_ios.run();
-    }));
+    std::unique_ptr<std::thread> th(new std::thread([this]() { m_ios.run(); }));
 
     m_thread_pool.push_back(std::move(th));
   }

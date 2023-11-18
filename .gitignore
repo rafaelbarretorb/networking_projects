@@ -29,6 +29,7 @@
 
 # VS Code
 .vscode
+*.code-workspace
 
 # CMake and build folders
 build/

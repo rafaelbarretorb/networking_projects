@@ -6,8 +6,8 @@
 #include <memory>
 #include <string>
 
-using boost::asio::ip::tcp;
 using boost::asio::ip::address_v4;
+using boost::asio::ip::tcp;
 using boost::system::error_code;
 
 namespace net {
@@ -26,7 +26,7 @@ class Service {
   // Here we perform the cleanup.
   void onFinish();
 
-  std::string ProcessRequest(boost::asio::streambuf& request);
+  std::string ProcessMsg(boost::asio::streambuf& stream_buf_msg);
 
  private:
   std::shared_ptr<tcp::socket> m_sock;

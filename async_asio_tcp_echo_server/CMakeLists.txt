@@ -14,23 +14,29 @@ include_directories(
 )
 
 add_library(
-  echo_tcp_lib
-  src/Acceptor.cpp
-  src/Server.cpp
-  src/Service.cpp
+  server_lib
+  src/server/acceptor.cpp
+  src/server/server.cpp
+  src/server/service.cpp
 )
 
-add_executable(async_tcp_server src/async_tcp_server.cpp)
+add_executable(run_tcp_server src/run_tcp_server.cpp)
 
 target_link_libraries(
-  async_tcp_server
-  echo_tcp_lib
+  run_tcp_server
+  server_lib
   ${Boost_LIBRARIES}
 )
 
-add_executable(async_tcp_client src/async_tcp_client.cpp)
+add_library(
+  client_lib
+  src/client/client.cpp
+)
+
+add_executable(run_tcp_client src/run_tcp_client.cpp)
 
 target_link_libraries(
-  async_tcp_client
+  run_tcp_client
+  client_lib
   ${Boost_LIBRARIES}
 )
