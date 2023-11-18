@@ -1,0 +1,1 @@
+cmake -D CMAKE_CXX_COMPILER="/bin/clang++-xx" -D CMAKE_C_COMPILER="/bin/clang-xx"
