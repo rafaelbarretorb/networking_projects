@@ -1,10 +1,10 @@
 #include "game_settings.h"
 #include "MMO_Common.h"
 
-#include <unordered_map>
-
 #define OLC_PGEX_TRANSFORMEDVIEW
 #include "olcPGEX_TransformedView.h"
+
+#include <unordered_map>
 
 class MMOGame : public olc::PixelGameEngine,
                 olc::net::ClientInterface<GameMsg> {
@@ -17,89 +17,65 @@ class MMOGame : public olc::PixelGameEngine,
   const static std::string sWorldMap;
   const static olc::vi2d vWorldSize;
 
- private:
-  std::unordered_map<uint32_t, sPlayerDescription> mapObjects;
-  uint32_t nPlayerID = 0;
-  sPlayerDescription descPlayer;
-
-  bool bWaitingForConnection = true;
-
- public:
-  bool OnUserCreate() override {
-    tv = olc::TileTransformedView({ScreenWidth(), ScreenHeight()}, {8, 8});
-
-		// TODO remove
-    // mapObjects[0].nUniqueID = 0;
-    // mapObjects[0].vPos = { 3.0f, 3.0f };
-
-    if (Connect("127.0.0.1", 60000)) {
-      return true;
-    }
-
-    return false;
+  void HandlePanAndZoom() {
+    if (GetMouse(2).bPressed) tv.StartPan(GetMousePos());
+    if (GetMouse(2).bHeld) tv.UpdatePan(GetMousePos());
+    if (GetMouse(2).bReleased) tv.EndPan(GetMousePos());
+    if (GetMouseWheel() > 0) tv.ZoomAtScreenPos(1.5f, GetMousePos());
+    if (GetMouseWheel() < 0) tv.ZoomAtScreenPos(0.75f, GetMousePos());
   }
 
-  bool OnUserUpdate(float fElapsedTime) override {
-    // Check for incoming network messages
-    if (IsConnected()) {
-      while (!Incoming().Empty()) {
-        auto msg = Incoming().PopFront().msg;
-
-        switch (msg.header.id) {
-          case (GameMsg::Client_Accepted): {
-            std::cout << "Server accepted client - you're in!\n";
-            olc::net::Message<GameMsg> msg;
-            msg.header.id = GameMsg::Client_RegisterWithServer;
-            descPlayer.vPos = {3.0f, 3.0f};
-            msg << descPlayer;
-            Send(msg);
-            break;
-          }
-
-          case (GameMsg::Client_AssignID): {
-            // Server is assigning us OUR id
-            msg >> nPlayerID;
-            std::cout << "Assigned Client ID = " << nPlayerID << "\n";
-            break;
-          }
-
-          case (GameMsg::Game_AddPlayer): {
-            sPlayerDescription desc;
-            msg >> desc;
-            mapObjects.insert_or_assign(desc.nUniqueID, desc);
-
-            if (desc.nUniqueID == nPlayerID) {
-              // Now we exist in game world
-              bWaitingForConnection = false;
-            }
-            break;
-          }
-
-          case (GameMsg::Game_RemovePlayer): {
-            uint32_t nRemovalID = 0;
-            msg >> nRemovalID;
-            mapObjects.erase(nRemovalID);
-            break;
-          }
-
-          case (GameMsg::Game_UpdatePlayer): {
-            sPlayerDescription desc;
-            msg >> desc;
-            mapObjects.insert_or_assign(desc.nUniqueID, desc);
-            break;
-          }
+  void DrawWorld() {
+    olc::vi2d vTL = tv.GetTopLeftTile().max({0, 0});
+    olc::vi2d vBR = tv.GetBottomRightTile().min(vWorldSize);
+    olc::vi2d vTile;
+    for (vTile.y = vTL.y; vTile.y < vBR.y; vTile.y++) {
+      for (vTile.x = vTL.x; vTile.x < vBR.x; vTile.x++) {
+        if (sWorldMap[vTile.y * vWorldSize.x + vTile.x] == '#') {
+          tv.DrawRect(vTile, {1.0f, 1.0f});
+          tv.DrawRect(olc::vf2d(vTile) + olc::vf2d(0.1f, 0.1f), {0.8f, 0.8f});
         }
       }
     }
+  }
 
-    if (bWaitingForConnection) {
-      Clear(olc::DARK_BLUE);
-      DrawString({10, 10}, "Waiting To Connect...", olc::WHITE);
-      return true;
+  void DrawWorldObjects() {
+    for (auto& object : mapObjects) {
+      // Draw Boundary
+      tv.DrawCircle(object.second.vPos, object.second.fRadius);
+
+      // Draw Velocity
+      if (object.second.vVel.mag2() > 0) {
+        tv.DrawLine(object.second.vPos,
+                    object.second.vPos +
+                        object.second.vVel.norm() * object.second.fRadius,
+                    olc::MAGENTA);
+      }
+
+      // Draw Name
+      olc::vi2d vNameSize =
+          GetTextSizeProp("ID: " + std::to_string(object.first));
+      tv.DrawStringPropDecal(
+          object.second.vPos - olc::vf2d{vNameSize.x * 0.5f * 0.25f * 0.125f,
+                                         -object.second.fRadius * 1.25f},
+          "ID: " + std::to_string(object.first), olc::BLUE, {0.25f, 0.25f});
     }
+  }
 
-		// TODO make external function
-    // Control of Player Object
+  void UpdateScreen() {
+    Clear(olc::BLACK);
+    DrawWorld();
+    DrawWorldObjects();
+  }
+
+  void SendPlayerDescription() {
+    olc::net::Message<GameMsg> msg;
+    msg.header.id = GameMsg::Game_UpdatePlayer;
+    msg << mapObjects[nPlayerID];
+    Send(msg);
+  }
+
+  void ControlOfPlayerObject() {
     mapObjects[nPlayerID].vVel = {0.0f, 0.0f};
     if (GetKey(olc::Key::W).bHeld) mapObjects[nPlayerID].vVel += {0.0f, -1.0f};
     if (GetKey(olc::Key::S).bHeld) mapObjects[nPlayerID].vVel += {0.0f, +1.0f};
@@ -108,9 +84,9 @@ class MMOGame : public olc::PixelGameEngine,
 
     if (mapObjects[nPlayerID].vVel.mag2() > 0)
       mapObjects[nPlayerID].vVel = mapObjects[nPlayerID].vVel.norm() * 4.0f;
+  }
 
-		// TODO make external function
-    // Update objects locally
+  void UpdateObjectsLocally(float fElapsedTime) {
     for (auto& object : mapObjects) {
       // Where will object be worst case?
       olc::vf2d vPotentialPosition =
@@ -166,59 +142,101 @@ class MMOGame : public olc::PixelGameEngine,
       // Set the objects new position to the allowed potential position
       object.second.vPos = vPotentialPosition;
     }
+  }
 
-		// TODO make external function
-    // Handle Pan & Zoom
-    if (GetMouse(2).bPressed) tv.StartPan(GetMousePos());
-    if (GetMouse(2).bHeld) tv.UpdatePan(GetMousePos());
-    if (GetMouse(2).bReleased) tv.EndPan(GetMousePos());
-    if (GetMouseWheel() > 0) tv.ZoomAtScreenPos(1.5f, GetMousePos());
-    if (GetMouseWheel() < 0) tv.ZoomAtScreenPos(0.75f, GetMousePos());
-
-    // Clear World
-    Clear(olc::BLACK);
-
-		// TODO make external function
-    // Draw World
-    olc::vi2d vTL = tv.GetTopLeftTile().max({0, 0});
-    olc::vi2d vBR = tv.GetBottomRightTile().min(vWorldSize);
-    olc::vi2d vTile;
-    for (vTile.y = vTL.y; vTile.y < vBR.y; vTile.y++)
-      for (vTile.x = vTL.x; vTile.x < vBR.x; vTile.x++) {
-        if (sWorldMap[vTile.y * vWorldSize.x + vTile.x] == '#') {
-          tv.DrawRect(vTile, {1.0f, 1.0f});
-          tv.DrawRect(olc::vf2d(vTile) + olc::vf2d(0.1f, 0.1f), {0.8f, 0.8f});
-        }
+  void UpdateClientState(olc::net::Message<GameMsg> &msg) {
+    switch (msg.header.id) {
+      case (GameMsg::Client_Accepted): {
+        std::cout << "Server accepted client - you're in!\n";
+        olc::net::Message<GameMsg> msg;
+        msg.header.id = GameMsg::Client_RegisterWithServer;
+        descPlayer.vPos = {3.0f, 3.0f};
+        msg << descPlayer;
+        Send(msg);
+        break;
       }
 
-		// TODO make external function
-    // Draw World Objects
-    for (auto& object : mapObjects) {
-      // Draw Boundary
-      tv.DrawCircle(object.second.vPos, object.second.fRadius);
+      case (GameMsg::Client_AssignID): {
+        // Server is assigning us OUR id
+        msg >> nPlayerID;
+        std::cout << "Assigned Client ID = " << nPlayerID << "\n";
+        break;
+      }
 
-      // Draw Velocity
-      if (object.second.vVel.mag2() > 0)
-        tv.DrawLine(object.second.vPos,
-                    object.second.vPos +
-                        object.second.vVel.norm() * object.second.fRadius,
-                    olc::MAGENTA);
+      case (GameMsg::Game_AddPlayer): {
+        sPlayerDescription desc;
+        msg >> desc;
+        mapObjects.insert_or_assign(desc.nUniqueID, desc);
 
-      // Draw Name
-      olc::vi2d vNameSize =
-          GetTextSizeProp("ID: " + std::to_string(object.first));
-      tv.DrawStringPropDecal(
-          object.second.vPos - olc::vf2d{vNameSize.x * 0.5f * 0.25f * 0.125f,
-                                         -object.second.fRadius * 1.25f},
-          "ID: " + std::to_string(object.first), olc::BLUE, {0.25f, 0.25f});
+        if (desc.nUniqueID == nPlayerID) {
+          // Now we exist in game world
+          bWaitingForConnection = false;
+        }
+        break;
+      }
+
+      case (GameMsg::Game_RemovePlayer): {
+        uint32_t nRemovalID = 0;
+        msg >> nRemovalID;
+        mapObjects.erase(nRemovalID);
+        break;
+      }
+
+      case (GameMsg::Game_UpdatePlayer): {
+        sPlayerDescription desc;
+        msg >> desc;
+        mapObjects.insert_or_assign(desc.nUniqueID, desc);
+        break;
+      }
+    }
+  }
+
+  std::unordered_map<uint32_t, sPlayerDescription> mapObjects;
+  uint32_t nPlayerID = 0;
+  sPlayerDescription descPlayer;
+
+  bool bWaitingForConnection = true;
+
+ public:
+  bool OnUserCreate() override {
+    tv = olc::TileTransformedView({ScreenWidth(), ScreenHeight()}, {8, 8});
+
+		// TODO remove
+    // mapObjects[0].nUniqueID = 0;
+    // mapObjects[0].vPos = { 3.0f, 3.0f };
+
+    if (Connect("127.0.0.1", 60000)) {
+      return true;
     }
 
-		// TODO make external function
-    // Send player description
-    olc::net::Message<GameMsg> msg;
-    msg.header.id = GameMsg::Game_UpdatePlayer;
-    msg << mapObjects[nPlayerID];
-    Send(msg);
+    return false;
+  }
+
+  bool OnUserUpdate(float fElapsedTime) override {
+    // Check for incoming network messages
+    if (IsConnected()) {
+      while (!Incoming().Empty()) {
+        auto msg = Incoming().PopFront().msg;
+        UpdateClientState(msg);
+      }
+    }
+
+    if (bWaitingForConnection) {
+      Clear(olc::DARK_BLUE);
+      DrawString({10, 10}, "Waiting To Connect...", olc::WHITE);
+      return true;
+    }
+
+    ControlOfPlayerObject();
+
+    UpdateObjectsLocally(fElapsedTime);
+
+    HandlePanAndZoom();
+
+    UpdateScreen();
+
+    SendPlayerDescription();
+
     return true;
   }
 };
