@@ -1,13 +1,16 @@
 /*
   Run async tcp client
 
-  ./async_tcp_client <ip-address-name> <port-number> <client-name>
-  <sleep-time-in-secs>
+  ./run_tcp_client <ip> <port> <client> <sleep-time>
+  - ip: IP address
+  - port: port number
+  - client: client name>
+  - sleep-time: sleep time in seconds
 
-  Ex
-  ./async_tcp_client 127.0.0.1 3333 Ted 5
-  ./async_tcp_client 127.0.0.1 3333 Barney 2
-  ./async_tcp_client 127.0.0.1 3333 Marshall
+  Ex:
+  ./run_tcp_client 127.0.0.1 3333 Ted 2
+  ./run_tcp_client 127.0.0.1 3333 Barney 1
+  ./run_tcp_client 127.0.0.1 3333 Marshall 3
 */
 
 #include <boost/system/error_code.hpp>
@@ -24,12 +27,6 @@ using boost::asio::ip::address;
 using boost::asio::ip::tcp;
 using boost::system::error_code;
 
-// /*
-// argv[1] IP
-// argv[2] Port
-// argv[3] Client Name
-// argv[4] Sleep Time
-// */
 
 void printClientInfo(char *info[]) {
   std::cout << "Client Info:\n";
@@ -40,9 +37,8 @@ void printClientInfo(char *info[]) {
 }
 
 void printClientMsg(const std::string &name, const std::string &msg) {
-  std::cout << "Client : " << name << "\n";
-  std::cout << "Message : " << msg << "\n";
-  std::cout << "\n";
+  std::cout << "Client   : " << name << "\n";
+  std::cout << "Message  : " << msg << "\n";
 }
 
 void handler(const std::string &response, const error_code &ec) {
@@ -59,29 +55,32 @@ void handler(const std::string &response, const error_code &ec) {
 }
 
 int main(int argc, char *argv[]) {
-  // if (argc == 5) {
-  //   printClientInfo(argv);
-  // } else {
-  //   std::cout << "Error: missing command Line arguments\n";
-  // }
+  if (argc == 5) {
+    printClientInfo(argv);
+  } else {
+    std::cout << "Error: missing command Line arguments\n";
+    std::cout << "Usage:\n";
+    std::cout << "./run_tcp_client <ip-address-name> <port-number> <client-name>\n";
+    return 0;
+  }
 
   const std::string msg{"Hello Server!"};
-  const uint32_t time{10};
-  const std::string raw_ip_address{"192.168.15.5"};
-  uint16_t port{3333};
+
+  const std::string raw_ip_address{argv[1]};
+  uint16_t port{(uint16_t)std::atoi(argv[2])};
+  const std::string client_name{argv[3]};
+  uint32_t time{(uint32_t)std::atoi(argv[4])};
 
   try {
     net::Client client;
-    // Here we emulate the user's behavior.
-    // User initiates a request with id 1.
-    client.sendMsg(msg, time, raw_ip_address, port, handler);
 
-    // while (true) {
-    //   printClientMsg(client_name, msg);
+    do {
+      printClientMsg(client_name, msg);
 
-    //   client.sendMsg(msg, server_ip_address, server_port_num, handler);
-    //   std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
-    // }
+      client.sendMsg(msg, time, raw_ip_address, port, handler);
+      std::this_thread::sleep_for(std::chrono::seconds(time));
+    }
+    while (client.IsConnected());
 
     client.close();
   } catch (boost::system::system_error &e) {

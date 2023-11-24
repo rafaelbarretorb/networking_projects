@@ -21,6 +21,8 @@ class Client : public boost::noncopyable {
 
   void close();
 
+  bool IsConnected() { return is_connected_; };
+
  private:
   void onRequestComplete(std::shared_ptr<Session> session);
 
@@ -29,6 +31,7 @@ class Client : public boost::noncopyable {
   std::mutex m_active_sessions_guard;
   std::unique_ptr<boost::asio::io_service::work> m_work;
   std::unique_ptr<std::thread> m_thread;
+  bool is_connected_{false};
 };
 
 }  // namespace net

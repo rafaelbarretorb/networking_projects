@@ -24,7 +24,10 @@ void Client::sendMsg(const std::string& message, unsigned int duration_sec,
         if (ec.value() != 0) {
           session->m_ec = ec;
           onRequestComplete(session);
+          is_connected_ = false;
           return;
+        } else {
+          is_connected_ = true;
         }
 
         boost::asio::async_write(

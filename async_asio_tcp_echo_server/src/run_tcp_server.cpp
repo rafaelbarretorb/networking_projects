@@ -23,7 +23,7 @@ int main() {
 
     srv.Start(port_num, thread_pool_size);
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(20));
 
     srv.Stop();
   } catch (boost::system::system_error &e) {
