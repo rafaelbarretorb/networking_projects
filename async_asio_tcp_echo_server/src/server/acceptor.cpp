@@ -16,11 +16,11 @@ void Acceptor::InitAccept() {
   std::shared_ptr<tcp::socket> sock(new tcp::socket(m_ios));
 
   m_acceptor.async_accept(*sock.get(), [this, sock](const error_code& error) {
-    onAccept(error, sock);
+    OnAccept(error, sock);
   });
 }
 
-void Acceptor::onAccept(const error_code& ec,
+void Acceptor::OnAccept(const error_code& ec,
                         std::shared_ptr<tcp::socket> sock) {
   if (ec.value() == 0) {
     (new Service(sock))->StartHandling();

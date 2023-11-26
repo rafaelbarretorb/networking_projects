@@ -7,11 +7,11 @@
 namespace net {
 using boost::asio::ip::address;
 using boost::asio::ip::tcp;
+using boost::system::error_code;
 
 // Function pointer type that points to the callback function which is called
 // when a request is complete.
-using Callback = void (*)(const std::string& response,
-                          const boost::system::error_code& ec);
+using Callback = void (*)(const std::string& response, const error_code& ec);
 
 // Data structure whose purpose is to keep the data related to a
 // particular request while it is being executed. Let's name it Session.

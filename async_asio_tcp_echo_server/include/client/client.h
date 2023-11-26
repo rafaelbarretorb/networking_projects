@@ -15,16 +15,16 @@ class Client : public boost::noncopyable {
  public:
   Client();
 
-  void sendMsg(const std::string& message, unsigned int duration_sec,
+  void SendMsg(const std::string& client_name, const std::string& message, unsigned int duration_sec,
                const std::string& raw_ip_address, uint16_t port_num,
                Callback callback);
 
-  void close();
+  void Close();
 
   bool IsConnected() { return is_connected_; };
 
  private:
-  void onRequestComplete(std::shared_ptr<Session> session);
+  void OnRequestComplete(std::shared_ptr<Session> session);
 
  private:
   boost::asio::io_context m_ioc;

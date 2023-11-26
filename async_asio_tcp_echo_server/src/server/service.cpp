@@ -8,16 +8,16 @@ void Service::StartHandling() {
   boost::asio::async_read_until(
       *m_sock.get(), m_request, '\n',
       [this](const error_code& ec, std::size_t bytes_transferred) {
-        onRequestReceived(ec, bytes_transferred);
+        OnRequestReceived(ec, bytes_transferred);
       });
 }
 
-void Service::onRequestReceived(const error_code& ec,
+void Service::OnRequestReceived(const error_code& ec,
                                 std::size_t bytes_transferred) {
   if (ec.value() != 0) {
     std::cout << "Error occured! Error code = " << ec.value()
               << ". Message: " << ec.message();
-    onFinish();
+    OnFinish();
     return;
   }
 
@@ -28,21 +28,21 @@ void Service::onRequestReceived(const error_code& ec,
   boost::asio::async_write(
       *m_sock.get(), boost::asio::buffer(m_response),
       [this](const error_code& ec, std::size_t bytes_transferred) {
-        onResponseSent(ec, bytes_transferred);
+        OnResponseSent(ec, bytes_transferred);
       });
 }
 
-void Service::onResponseSent(const error_code& ec,
+void Service::OnResponseSent(const error_code& ec,
                              std::size_t bytes_transferred) {
   if (ec.value() != 0) {
     std::cout << "Error occured! Error code = " << ec.value()
               << ". Message: " << ec.message();
   }
 
-  onFinish();
+  OnFinish();
 }
 
-void Service::onFinish() { delete this; }
+void Service::OnFinish() { delete this; }
 
 std::string Service::ProcessMsg(boost::asio::streambuf& stream_buf_msg) {
   // get buffer size
@@ -61,8 +61,12 @@ std::string Service::ProcessMsg(boost::asio::streambuf& stream_buf_msg) {
   std::string message{msg_stream.str()};
   message.pop_back();
 
-  std::cout << "[Server] Client said: '" << message << "'\n";
-  std::string response{"Hello Client!\n"};
+  std::string delimiter = ";";
+  std::string client_name = message.substr(0, message.find(delimiter));
+  std::string client_message = message.substr(message.find(delimiter) + delimiter.size(), std::string::npos);
+
+  std::cout << "[Server] Client " << client_name << " said: " << client_message << "'\n";
+  std::string response{"Hello " + client_name + "!\n"};
   return response;
 }
 

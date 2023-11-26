@@ -19,12 +19,12 @@ class Service {
   void StartHandling();
 
  private:
-  void onRequestReceived(const error_code& ec, std::size_t bytes_transferred);
+  void OnRequestReceived(const error_code& ec, std::size_t bytes_transferred);
 
-  void onResponseSent(const error_code& ec, std::size_t bytes_transferred);
+  void OnResponseSent(const error_code& ec, std::size_t bytes_transferred);
 
   // Here we perform the cleanup.
-  void onFinish();
+  void OnFinish();
 
   std::string ProcessMsg(boost::asio::streambuf& stream_buf_msg);
 

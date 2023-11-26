@@ -29,7 +29,7 @@ class Acceptor {
 
  private:
   void InitAccept();
-  void onAccept(const error_code &ec, std::shared_ptr<tcp::socket> sock);
+  void OnAccept(const error_code &ec, std::shared_ptr<tcp::socket> sock);
 
   boost::asio::io_service &m_ios;
   tcp::acceptor m_acceptor;

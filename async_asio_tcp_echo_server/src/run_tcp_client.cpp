@@ -4,7 +4,7 @@
   ./run_tcp_client <ip> <port> <client> <sleep-time>
   - ip: IP address
   - port: port number
-  - client: client name>
+  - client: client name
   - sleep-time: sleep time in seconds
 
   Ex:
@@ -27,7 +27,6 @@ using boost::asio::ip::address;
 using boost::asio::ip::tcp;
 using boost::system::error_code;
 
-
 void printClientInfo(char *info[]) {
   std::cout << "Client Info:\n";
   std::cout << "IP:             " << info[1] << "\n";
@@ -37,8 +36,7 @@ void printClientInfo(char *info[]) {
 }
 
 void printClientMsg(const std::string &name, const std::string &msg) {
-  std::cout << "Client   : " << name << "\n";
-  std::cout << "Message  : " << msg << "\n";
+  std::cout << "Message  : " << name << " said: " << msg << "\n";
 }
 
 void handler(const std::string &response, const error_code &ec) {
@@ -64,25 +62,24 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  const std::string msg{"Hello Server!"};
-
   const std::string raw_ip_address{argv[1]};
   uint16_t port{(uint16_t)std::atoi(argv[2])};
   const std::string client_name{argv[3]};
   uint32_t time{(uint32_t)std::atoi(argv[4])};
+
+  const std::string msg{"Hello Server!"};
 
   try {
     net::Client client;
 
     do {
       printClientMsg(client_name, msg);
-
-      client.sendMsg(msg, time, raw_ip_address, port, handler);
+      client.SendMsg(client_name,msg, time, raw_ip_address, port, handler);
       std::this_thread::sleep_for(std::chrono::seconds(time));
     }
     while (client.IsConnected());
 
-    client.close();
+    client.Close();
   } catch (boost::system::system_error &e) {
     std::cout << "Error occured! Error code = " << e.code()
               << ". Message: " << e.what();
