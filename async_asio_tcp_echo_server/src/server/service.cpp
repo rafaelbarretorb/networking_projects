@@ -6,7 +6,7 @@ namespace net {
 
 void Service::StartHandling() {
   boost::asio::async_read_until(
-      *m_sock.get(), m_request, '\n',
+      *m_sock_.get(), m_request_, '\n',
       [this](const error_code& ec, std::size_t bytes_transferred) {
         OnRequestReceived(ec, bytes_transferred);
       });
@@ -22,11 +22,11 @@ void Service::OnRequestReceived(const error_code& ec,
   }
 
   // Process the request.
-  m_response = ProcessMsg(m_request);
+  m_response_ = ProcessMsg(m_request_);
 
   // Initiate asynchronous write operation.
   boost::asio::async_write(
-      *m_sock.get(), boost::asio::buffer(m_response),
+      *m_sock_.get(), boost::asio::buffer(m_response_),
       [this](const error_code& ec, std::size_t bytes_transferred) {
         OnResponseSent(ec, bytes_transferred);
       });
@@ -63,9 +63,11 @@ std::string Service::ProcessMsg(boost::asio::streambuf& stream_buf_msg) {
 
   std::string delimiter = ";";
   std::string client_name = message.substr(0, message.find(delimiter));
-  std::string client_message = message.substr(message.find(delimiter) + delimiter.size(), std::string::npos);
+  std::string client_message = message.substr(
+      message.find(delimiter) + delimiter.size(), std::string::npos);
 
-  std::cout << "[Server] Client " << client_name << " said: " << client_message << "'\n";
+  std::cout << "[Server] Client " << client_name << " said: " << client_message
+            << "'\n";
   std::string response{"Hello " + client_name + "!\n"};
   return response;
 }

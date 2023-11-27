@@ -1,21 +1,22 @@
+#include "server/acceptor.h"
+
 #include <iostream>
 
-#include "server/acceptor.h"
 #include "server/service.h"
 
 namespace net {
 
 void Acceptor::Start() {
-  m_acceptor.listen();
+  m_acceptor_.listen();
   InitAccept();
 }
 
-void Acceptor::Stop() { m_isStopped.store(true); }
+void Acceptor::Stop() { m_is_stopped_.store(true); }
 
 void Acceptor::InitAccept() {
-  std::shared_ptr<tcp::socket> sock(new tcp::socket(m_ios));
+  std::shared_ptr<tcp::socket> sock(new tcp::socket(m_ios_));
 
-  m_acceptor.async_accept(*sock.get(), [this, sock](const error_code& error) {
+  m_acceptor_.async_accept(*sock.get(), [this, sock](const error_code& error) {
     OnAccept(error, sock);
   });
 }
@@ -30,12 +31,12 @@ void Acceptor::OnAccept(const error_code& ec,
   }
   // Init next async accept operation if
   // acceptor has not been stopped yet.
-  if (!m_isStopped.load()) {
+  if (!m_is_stopped_.load()) {
     InitAccept();
   } else {
     // Stop accepting incoming connections
     // and free allocated resources.
-    m_acceptor.close();
+    m_acceptor_.close();
   }
 }
 

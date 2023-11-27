@@ -58,7 +58,8 @@ int main(int argc, char *argv[]) {
   } else {
     std::cout << "Error: missing command Line arguments\n";
     std::cout << "Usage:\n";
-    std::cout << "./run_tcp_client <ip-address-name> <port-number> <client-name>\n";
+    std::cout
+        << "./run_tcp_client <ip-address-name> <port-number> <client-name>\n";
     return 0;
   }
 
@@ -74,10 +75,9 @@ int main(int argc, char *argv[]) {
 
     do {
       printClientMsg(client_name, msg);
-      client.SendMsg(client_name,msg, time, raw_ip_address, port, handler);
+      client.SendMsg(client_name, msg, time, raw_ip_address, port, handler);
       std::this_thread::sleep_for(std::chrono::seconds(time));
-    }
-    while (client.IsConnected());
+    } while (client.IsConnected());
 
     client.Close();
   } catch (boost::system::system_error &e) {

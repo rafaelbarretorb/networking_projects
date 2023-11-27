@@ -14,7 +14,7 @@ namespace net {
 
 class Service {
  public:
-  explicit Service(std::shared_ptr<tcp::socket> sock) : m_sock(sock) {}
+  explicit Service(std::shared_ptr<tcp::socket> sock) : m_sock_(sock) {}
 
   void StartHandling();
 
@@ -29,9 +29,9 @@ class Service {
   std::string ProcessMsg(boost::asio::streambuf& stream_buf_msg);
 
  private:
-  std::shared_ptr<tcp::socket> m_sock;
-  std::string m_response;
-  boost::asio::streambuf m_request;
+  std::shared_ptr<tcp::socket> m_sock_;
+  std::string m_response_;
+  boost::asio::streambuf m_request_;
 };
 
 }  // namespace net
