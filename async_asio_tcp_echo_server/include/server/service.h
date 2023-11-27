@@ -14,24 +14,24 @@ namespace net {
 
 class Service {
  public:
-  explicit Service(std::shared_ptr<tcp::socket> sock) : m_sock(sock) {}
+  explicit Service(std::shared_ptr<tcp::socket> sock) : m_sock_(sock) {}
 
   void StartHandling();
 
  private:
-  void onRequestReceived(const error_code& ec, std::size_t bytes_transferred);
+  void OnRequestReceived(const error_code& ec, std::size_t bytes_transferred);
 
-  void onResponseSent(const error_code& ec, std::size_t bytes_transferred);
+  void OnResponseSent(const error_code& ec, std::size_t bytes_transferred);
 
   // Here we perform the cleanup.
-  void onFinish();
+  void OnFinish();
 
   std::string ProcessMsg(boost::asio::streambuf& stream_buf_msg);
 
  private:
-  std::shared_ptr<tcp::socket> m_sock;
-  std::string m_response;
-  boost::asio::streambuf m_request;
+  std::shared_ptr<tcp::socket> m_sock_;
+  std::string m_response_;
+  boost::asio::streambuf m_request_;
 };
 
 }  // namespace net

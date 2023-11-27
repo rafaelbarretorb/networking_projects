@@ -24,10 +24,10 @@ class Server {
   void Stop();
 
  private:
-  boost::asio::io_service m_ios;
-  std::unique_ptr<boost::asio::io_service::work> m_work;
-  std::unique_ptr<Acceptor> acc;
-  std::vector<std::unique_ptr<std::thread>> m_thread_pool;
+  boost::asio::io_service m_ios_;
+  std::unique_ptr<boost::asio::io_service::work> m_work_;
+  std::unique_ptr<Acceptor> acc_;
+  std::vector<std::unique_ptr<std::thread>> m_thread_pool_;
 };
 
 }  // namespace net

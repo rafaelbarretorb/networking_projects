@@ -17,9 +17,9 @@ using boost::system::error_code;
 class Acceptor {
  public:
   Acceptor(boost::asio::io_service &ios, uint16_t port_num)
-      : m_ios(ios),
-        m_acceptor(m_ios, tcp::endpoint(address_v4::any(), port_num)),
-        m_isStopped(false) {}
+      : m_ios_(ios),
+        m_acceptor_(m_ios_, tcp::endpoint(address_v4::any(), port_num)),
+        m_is_stopped_(false) {}
 
   // Start accepting incoming connection requests.
   void Start();
@@ -29,11 +29,11 @@ class Acceptor {
 
  private:
   void InitAccept();
-  void onAccept(const error_code &ec, std::shared_ptr<tcp::socket> sock);
+  void OnAccept(const error_code &ec, std::shared_ptr<tcp::socket> sock);
 
-  boost::asio::io_service &m_ios;
-  tcp::acceptor m_acceptor;
-  std::atomic<bool> m_isStopped;
+  boost::asio::io_service &m_ios_;
+  tcp::acceptor m_acceptor_;
+  std::atomic<bool> m_is_stopped_;
 };
 
 }  // namespace net

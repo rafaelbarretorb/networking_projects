@@ -15,20 +15,23 @@ class Client : public boost::noncopyable {
  public:
   Client();
 
-  void sendMsg(const std::string& message, unsigned int duration_sec,
-               const std::string& raw_ip_address, uint16_t port_num,
-               Callback callback);
+  void SendMsg(const std::string& client_name, const std::string& message,
+               unsigned int duration_sec, const std::string& raw_ip_address,
+               uint16_t port_num, Callback callback);
 
-  void close();
+  void Close();
+
+  bool IsConnected() { return is_connected_; };
 
  private:
-  void onRequestComplete(std::shared_ptr<Session> session);
+  void OnRequestComplete(std::shared_ptr<Session> session);
 
  private:
-  boost::asio::io_context m_ioc;
-  std::mutex m_active_sessions_guard;
-  std::unique_ptr<boost::asio::io_service::work> m_work;
-  std::unique_ptr<std::thread> m_thread;
+  boost::asio::io_context m_ioc_;
+  std::mutex m_active_sessions_guard_;
+  std::unique_ptr<boost::asio::io_service::work> m_work_;
+  std::unique_ptr<std::thread> m_thread_;
+  bool is_connected_{false};
 };
 
 }  // namespace net

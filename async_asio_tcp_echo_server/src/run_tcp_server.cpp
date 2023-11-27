@@ -11,21 +11,21 @@
 const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 
 int main() {
-  const uint16_t port_num {3333};
+  const uint16_t port_num{3333};
 
   try {
-    net::Server srv;
-    unsigned int thread_pool_size {std::thread::hardware_concurrency() * 2};
+    net::Server server;
+    unsigned int thread_pool_size{std::thread::hardware_concurrency() * 2};
 
     if (thread_pool_size == 0) {
       thread_pool_size = DEFAULT_THREAD_POOL_SIZE;
     }
 
-    srv.Start(port_num, thread_pool_size);
+    server.Start(port_num, thread_pool_size);
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(20));
 
-    srv.Stop();
+    server.Stop();
   } catch (boost::system::system_error &e) {
     std::cout << "Error occured! Error code = " << e.code()
               << ". Message: " << e.what();
