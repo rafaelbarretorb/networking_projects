@@ -4,8 +4,8 @@
  - [ ] async_asio_tcp_echo_server_cpp20
  - [x] MMO Game
 
-### [async_asio_tcp_echo_server](https://github.com/rafaelbarretorb/networking_projects/tree/main/async_asio_tcp_echo_server) ![95%](https://progress-bar.dev/95)
-Implementation of asynchronous TCP Server capable to handle multiple connections and process requests from multiple clients. This the "Hello World!" example of server applications.
+### [async_asio_tcp_echo_server](https://github.com/rafaelbarretorb/networking_projects/tree/main/async_asio_tcp_echo_server) ![100%](https://progress-bar.dev/100)
+Implementation of asynchronous TCP Server capable to handle multiple connections and process requests from multiple clients.
 - C++ 17
 - Boost.Asio
 - Lambda functions (since C++11)
