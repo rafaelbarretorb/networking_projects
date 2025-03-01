@@ -9,7 +9,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
-find_package(Boost 1.42.0 REQUIRED COMPONENTS system thread)
+# find_package(Boost REQUIRED COMPONENTS system thread)
 
 set(THREADS_PREFER_PTHREAD_FLAD ON)
 find_package(Threads REQUIRED)
@@ -61,9 +61,3 @@ if (UNIX)
         PNG::PNG
     )
 endif (UNIX)
-
-# if (WIN32)
-#     target_link_libraries(${Executable}
-#         ${WinSDK}
-#     )
-# endif (WIN32)

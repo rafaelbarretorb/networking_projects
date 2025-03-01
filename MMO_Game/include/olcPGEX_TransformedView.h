@@ -59,7 +59,7 @@
 
 	Author
 	~~~~~~
-	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020, 2021
+	David Barr, aka javidx9, ï¿½OneLoneCoder 2019, 2020, 2021
 
 	Revisions:
 	1.00:	Initial Release
@@ -102,7 +102,7 @@ namespace olc
 		virtual olc::vi2d ScaleToScreen(const olc::vf2d& vWorldSize) const;
 		virtual bool IsPointVisible(const olc::vf2d& vPos) const;
 		virtual bool IsRectVisible(const olc::vf2d& vPos, const olc::vf2d& vSize) const;
-		
+
 	protected:
 		olc::vf2d m_vWorldOffset = { 0.0f, 0.0f };
 		olc::vf2d m_vWorldScale = { 1.0f, 1.0f };
@@ -115,7 +115,7 @@ namespace olc
 	public: // Hopefully, these should look familiar!
 		// Plots a single point
 		virtual bool Draw(float x, float y, olc::Pixel p = olc::WHITE);
-		bool Draw(const olc::vf2d& pos, olc::Pixel p = olc::WHITE);		
+		bool Draw(const olc::vf2d& pos, olc::Pixel p = olc::WHITE);
 		// Draws a line from (x1,y1) to (x2,y2)
 		void DrawLine(float x1, float y1, float x2, float y2, olc::Pixel p = olc::WHITE, uint32_t pattern = 0xFFFFFFFF);
 		void DrawLine(const olc::vf2d& pos1, const olc::vf2d& pos2, olc::Pixel p = olc::WHITE, uint32_t pattern = 0xFFFFFFFF);

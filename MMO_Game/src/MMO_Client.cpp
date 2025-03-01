@@ -106,12 +106,20 @@ void MMOGame::DrawWorldObjects() {
     // Draw Boundary
     tv.DrawCircle(object.second.vPos, object.second.fRadius);
 
-    // Draw Velocity
-    if (object.second.vVel.mag2() > 0) {
-      tv.DrawLine(object.second.vPos,
-                  object.second.vPos +
-                      object.second.vVel.norm() * object.second.fRadius,
-                  olc::MAGENTA);
+    // Draw direction
+    olc::vf2d p1 = object.second.vPos;
+    olc::vf2d p2 = { object.second.fRadius * std::cos(object.second.vYaw), object.second.fRadius * std::sin(object.second.vYaw)};
+    tv.DrawLine(p1,
+                p1 + p2,
+                olc::MAGENTA);
+
+    // Draw bullet
+    if (object.second.bulletWasShotAndStillExist) {
+      tv.DrawCircle(object.second.bulletPos, object.second.bulletRadius, olc::RED);
+      tv.FillCircle(object.second.bulletPos, object.second.bulletRadius, olc::RED);
+    } else {
+      tv.DrawCircle(object.second.vPos, object.second.bulletRadius, olc::RED);
+      tv.FillCircle(object.second.vPos, object.second.bulletRadius, olc::RED);
     }
 
     // Draw Name
@@ -144,8 +152,19 @@ void MMOGame::ControlOfPlayerObject() {
   if (GetKey(olc::Key::A).bHeld) mapObjects[nPlayerID].vVel += {-1.0f, 0.0f};
   if (GetKey(olc::Key::D).bHeld) mapObjects[nPlayerID].vVel += {+1.0f, 0.0f};
 
-  if (mapObjects[nPlayerID].vVel.mag2() > 0)
-    mapObjects[nPlayerID].vVel = mapObjects[nPlayerID].vVel.norm() * 4.0f;
+  if (GetKey(olc::Key::W).bPressed || GetKey(olc::Key::W).bHeld) mapObjects[nPlayerID].vYaw = -M_PI/2;
+  if (GetKey(olc::Key::S).bPressed || GetKey(olc::Key::S).bHeld) mapObjects[nPlayerID].vYaw = M_PI/2;
+  if (GetKey(olc::Key::A).bPressed || GetKey(olc::Key::A).bHeld) mapObjects[nPlayerID].vYaw = M_PI;
+  if (GetKey(olc::Key::D).bPressed || GetKey(olc::Key::D).bHeld) mapObjects[nPlayerID].vYaw = 0.0;
+  if (GetKey(olc::Key::D).bHeld && GetKey(olc::Key::W).bHeld) mapObjects[nPlayerID].vYaw = -M_PI/4;
+  if (GetKey(olc::Key::A).bHeld && GetKey(olc::Key::W).bHeld) mapObjects[nPlayerID].vYaw = 5 * M_PI/4;
+  if (GetKey(olc::Key::A).bHeld && GetKey(olc::Key::S).bHeld) mapObjects[nPlayerID].vYaw = 3 * M_PI/4;
+  if (GetKey(olc::Key::D).bHeld && GetKey(olc::Key::S).bHeld) mapObjects[nPlayerID].vYaw = M_PI/4;
+
+  if (GetKey(olc::Key::SPACE).bPressed && !mapObjects[nPlayerID].bulletWasShotAndStillExist) {
+    mapObjects[nPlayerID].bulletVel = { (float)(std::cos(mapObjects[nPlayerID].vYaw)) , (float)(std::sin(mapObjects[nPlayerID].vYaw)) };
+    mapObjects[nPlayerID].bulletWasShotAndStillExist = true;
+  }
 }
 
 void MMOGame::UpdateObjectsLocally(float fElapsedTime) {
@@ -154,13 +173,27 @@ void MMOGame::UpdateObjectsLocally(float fElapsedTime) {
     olc::vf2d vPotentialPosition =
         object.second.vPos + object.second.vVel * fElapsedTime;
 
+    olc::vf2d vBulletPotentialPosition =
+        object.second.bulletPos + object.second.bulletVel * fElapsedTime;
+
     // Extract region of world cells that could have collision this frame
     olc::vi2d vCurrentCell = object.second.vPos.floor();
     olc::vi2d vTargetCell = vPotentialPosition;
+
+    olc::vi2d vBulletCurrentCell = object.second.bulletPos.floor();
+    olc::vi2d vBulletTargetCell = vBulletPotentialPosition;
+
     olc::vi2d vAreaTL =
         (vCurrentCell.min(vTargetCell) - olc::vi2d(1, 1)).max({0, 0});
     olc::vi2d vAreaBR =
         (vCurrentCell.max(vTargetCell) + olc::vi2d(1, 1)).min(vWorldSize);
+
+
+    olc::vi2d vBulletAreaTL =
+    (vBulletCurrentCell.min(vBulletTargetCell) - olc::vi2d(1, 1)).max({0, 0});
+
+    olc::vi2d vBulletAreaBR =
+    (vBulletCurrentCell.max(vBulletTargetCell) + olc::vi2d(1, 1)).min(vWorldSize);
 
     // Iterate through each cell in test area
     olc::vi2d vCell;
@@ -203,6 +236,21 @@ void MMOGame::UpdateObjectsLocally(float fElapsedTime) {
 
     // Set the objects new position to the allowed potential position
     object.second.vPos = vPotentialPosition;
+
+
+    // Bullet
+    for (vCell.y = vBulletAreaTL.y; vCell.y <= vBulletAreaBR.y; vCell.y++) {
+      for (vCell.x = vBulletAreaTL.x; vCell.x <= vBulletAreaBR.x; vCell.x++) {
+
+        if (sWorldMap[vCell.y * vWorldSize.x + vCell.x] == '#') {
+          object.second.bulletWasShotAndStillExist = false;
+          object.second.bulletPos = vPotentialPosition;
+          return;
+        }
+      }
+    }
+
+    object.second.bulletPos = vBulletPotentialPosition;
   }
 }
 
@@ -213,6 +261,8 @@ void MMOGame::UpdateClientState(olc::net::Message<GameMsg>& msg) {
       olc::net::Message<GameMsg> msg;
       msg.header.id = GameMsg::Client_RegisterWithServer;
       descPlayer.vPos = {3.0f, 3.0f};
+      descPlayer.bulletPos = {3.0f, 3.0f};
+      descPlayer.vYaw = 0.0;
       msg << descPlayer;
       Send(msg);
       break;

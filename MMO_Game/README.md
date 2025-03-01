@@ -16,5 +16,8 @@ ___
 
 ___
 ### New features added:
-- [ ] Players can shoot
-- [ ] Players have health indicator bar
+- [x] 2D Orientation
+- [x] Players can shoot
+
+![shoot_feature](images/shoot_feature.gif)
+
