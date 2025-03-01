@@ -25,13 +25,14 @@ struct sPlayerDescription {
 	uint32_t nUniqueID = 0;
 	uint32_t nAvatarID = 0;
 
-	uint32_t nHealth = 100;
-	uint32_t nAmmo = 20;
-	uint32_t nKills = 0;
-	uint32_t nDeaths = 0;
-
 	float fRadius = 0.5f;
 
 	olc::vf2d vPos;
 	olc::vf2d vVel;
+	float vYaw;
+
+	olc::vf2d bulletPos;
+	olc::vf2d bulletVel;
+	float bulletRadius = 0.1f;
+	bool bulletWasShotAndStillExist = false;
 };
