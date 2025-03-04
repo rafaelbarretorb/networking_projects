@@ -55,7 +55,7 @@ bool MMOGame::OnUserUpdate(float fElapsedTime) {
   // Check for incoming network messages
   if (IsConnected()) {
     while (!Incoming().Empty()) {
-      auto msg = Incoming().PopFront().msg;
+      auto msg = Incoming().Pop().msg;
       UpdateClientState(msg);
     }
   }

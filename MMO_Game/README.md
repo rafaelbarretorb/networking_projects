@@ -18,6 +18,7 @@ ___
 ### New features added:
 - [x] 2D Orientation
 - [x] Players can shoot
+- [x] Thread-safe queue refactored
 
 ![shoot_feature](images/shoot_feature.gif)
 

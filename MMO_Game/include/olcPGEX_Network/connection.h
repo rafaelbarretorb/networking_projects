@@ -178,7 +178,7 @@ class Connection : public std::enable_shared_from_this<Connection<T>> {
       // were available to be written, then start the process of writing the
       // message at the front of the queue.
       bool bWritingMessage = !m_qMessagesOut.Empty();
-      m_qMessagesOut.PushBack(msg);
+      m_qMessagesOut.Push(msg);
       if (!bWritingMessage) {
         WriteHeader();
       }
@@ -208,7 +208,7 @@ class Connection : public std::enable_shared_from_this<Connection<T>> {
                                    // ...it didnt, so we are done with this
                                    // message. Remove it from the outgoing
                                    // message queue
-                                   m_qMessagesOut.PopFront();
+                                   m_qMessagesOut.Pop();
 
                                    // If the queue is not empty, there are more
                                    // messages to send, so make this happen by
@@ -244,7 +244,7 @@ class Connection : public std::enable_shared_from_this<Connection<T>> {
           if (!ec) {
             // Sending was successful, so we are done with the message
             // and remove it from the queue
-            m_qMessagesOut.PopFront();
+            m_qMessagesOut.Pop();
 
             // If the queue still has messages in it, then issue the task to
             // send the next messages' header.
@@ -382,9 +382,9 @@ class Connection : public std::enable_shared_from_this<Connection<T>> {
     // Shove it in queue, converting it to an "owned message", by initialising
     // with the a shared pointer from this connection object
     if (m_nOwnerType == Owner::Server)
-      m_qMessagesIn.PushBack({this->shared_from_this(), m_msgTemporaryIn});
+      m_qMessagesIn.Push({this->shared_from_this(), m_msgTemporaryIn});
     else
-      m_qMessagesIn.PushBack({nullptr, m_msgTemporaryIn});
+      m_qMessagesIn.Push({nullptr, m_msgTemporaryIn});
 
     // We must now prime the asio context to receive the next message. It
     // wil just sit and wait for bytes to arrive, and the message construction
