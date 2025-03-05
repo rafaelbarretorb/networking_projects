@@ -70,11 +70,11 @@ bool MMOGame::OnUserUpdate(float fElapsedTime) {
 
   UpdateObjectsLocally(fElapsedTime);
 
-  HandlePanAndZoom();
-
-  UpdateScreen();
-
+  // new thread
   SendPlayerDescription();
+
+  HandlePanAndZoom();
+  UpdateScreen();
 
   return true;
 }
