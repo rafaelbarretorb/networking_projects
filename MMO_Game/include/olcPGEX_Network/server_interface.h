@@ -225,15 +225,13 @@ class ServerInterface {
   }
 
   // Force server to respond to incoming messages
-  void Update(size_t nMaxMessages = -1, bool bWait = false) {
-    if (bWait) m_qMessagesIn.Wait();
-
+  void Update(size_t nMaxMessages = -1) {
     // Process as many messages as you can up to the value
     // specified
     size_t nMessageCount = 0;
     while (nMessageCount < nMaxMessages && !m_qMessagesIn.Empty()) {
       // Grab the front message
-      auto msg = m_qMessagesIn.PopFront();
+      auto msg = m_qMessagesIn.Pop();
 
       // Pass to message handler
       OnMessage(msg.remote, msg.msg);

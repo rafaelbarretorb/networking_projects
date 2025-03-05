@@ -99,7 +99,7 @@ int main() {
   server.Start();
 
   while (1) {
-    server.Update(-1, true);
+    server.Update(-1);
   }
   return 0;
 }

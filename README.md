@@ -17,6 +17,7 @@ Simple Massively Multiplayer Online (MMO) Game in C++. Development made based on
 - New features added:
   - 2D Orientation
   - Players can shoot
+  - ThreadSafeQueue template class refactored
 
 ![game](MMO_Game/images/print_screen.png)
 
